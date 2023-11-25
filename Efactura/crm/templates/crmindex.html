@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Form</h1>
+<div class="col-md-6 offset-md-3">
+    {% if user.is_authenticated %}
+    <h1>User is authenticated</h1>
+    {% else %}
+    <form action="{% url 'crmindex' %}" method="post">
+        {% csrf_token %}
+        <fieldset class="row mb-4 border rounded">
+            <legend class="col-form-label col-sm-2 pt-0">Login</legend>
+        <div class="mb-3">
+            <label for="exampleInputEmail1" class="form-label">Email address</label>
+            <input type="email" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" name="username" placeholder="Enter email address" required>
+            <div id="emailHelp" class="form-text">Enter email address for login.</div>
+        </div>
+        <div class="mb-3">
+            <label for="exampleInputPassword1" class="form-label">Password</label>
+            <input type="password" class="form-control" id="exampleInputPassword1" name="password" placeholder="Enter password" required>
+        </div>
+        <!-- <div class="mb-3 form-check">
+            <input type="checkbox" class="form-check-input" id="exampleCheck1">
+            <label class="form-check-label" for="exampleCheck1">Check me out</label>
+        </div> -->
+        <button type="submit" class="btn btn-secondary">Login</button>
+    </fieldset>
+    </form>
+</div>
+{% endif %}
+{% endblock %}
