@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block content %}
+<p></p>
+<div class="card text-center">
+    <div class="card-header">
+      Python Django CRM
+    </div>
+    <div class="card-body">
+      <h5 class="card-title">Administrare și evidență clienți</h5>
+      <p class="card-text">Accesare pagină de autentificare</p>
+      <a href="{% url 'crmhome' %}" class="btn btn-dark">Autentificare</a>
+    </div>
+  </div>
+
+<div class="col-md-6 offset-md-3">
+    {% if user.is_authenticated %}
+    <h2>Utilizator autentificat</h2>
+    <h3>Proiect Python Django de administrare a unei baze de date pentru companii cu generare E-Factura XML</h3>
+</div>
+{% endif %}
+{% endblock %}
