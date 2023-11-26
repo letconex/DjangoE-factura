@@ -15,10 +15,10 @@ def crmindex(request):
         if user is not None:
             login(request, user)
             messages.success(request, f"User {username} has been logged!")
-            context = {'context': {'user': user}}
+            context = {'user': user}
             return redirect('crmindex', context=context)
         else:
-            messages.success(request, "Error logging in!")
+            messages.errors(request, "Error logging in!")
             return redirect('home')
     else:
         return render(request, "crmindex.html", {})
