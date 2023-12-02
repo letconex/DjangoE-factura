@@ -1,16 +1,20 @@
 {% extends "base.html" %}
+{% block title %}
+<title>Django E-Factura</title>
+{% endblock%}
+
 {% block content %}
 <p></p>
 <div class="card text-center">
     <div class="card-header">
-      Python Django CRM
+        Python Django CRM
     </div>
     <div class="card-body">
-      <h5 class="card-title">Administrare și evidență clienți</h5>
-      <p class="card-text">Accesare pagină de autentificare</p>
-      <a href="{% url 'crmhome' %}" class="btn btn-dark">Autentificare</a>
+        <h5 class="card-title">Administrare și evidență clienți</h5>
+        <p class="card-text">Accesare pagină de autentificare</p>
+        <a href="{% url 'crmhome' %}" class="btn btn-dark">Autentificare</a>
     </div>
-  </div>
+</div>
 
 <div class="col-md-6 offset-md-3">
     {% if user.is_authenticated %}

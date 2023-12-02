@@ -1,30 +1,122 @@
+import asyncio
 from datetime import datetime
 from time import sleep
 import json, httpx
+import asyncio
 
-class Anafapi():
-    ANAF_AURL = 'https://webservicesp.anaf.ro/AsynchWebService/api/v8/ws/tva'
-    ANAF_URL = 'https://webservicesp.anaf.ro/PlatitorTvaRest/api/v8/ws/tva'
+
+class Anafapi:
+    ANAF_AURL = "https://webservicesp.anaf.ro/AsynchWebService/api/v8/ws/tva"
+    ANAF_URL = "https://webservicesp.anaf.ro/PlatitorTvaRest/api/v8/ws/tva"
     headers: dict[str, str] = {
-    'Accept': 'application/json',
-    'Accept-Language': 'en-US,en;q=0.7,ro;q=0.3',
-    'Connection': 'keep-alive',
-    'Referer': 'https://mfinante.gov.ro',
-    'Content-Type': 'application/json',
+        "Accept": "application/json",
+        "Accept-Language": "en-US,en;q=0.7,ro;q=0.3",
+        "Connection": "keep-alive",
+        "Referer": "https://mfinante.gov.ro",
+        "Content-Type": "application/json",
     }
-    today: str = datetime.today().strftime('%Y-%m-%d')
-    def __init__(self, cui):
+    today: str = datetime.today().strftime("%Y-%m-%d")
+
+    def __init__(self, cui) -> None:
         self.classname: str = self.__class__.__name__
-        self.data = [{'cui': cui, 'data': self.__class__.today}]
-        print(data)
-    async def postsync(self):
-        async with httpx.AsyncClient() as asynclient:
-            response = await asynclient.post('https://webservicesp.anaf.ro/PlatitorTvaRest/api/v8/ws/tva', data=json.dumps(self.data), headers=self.__class__.headers)
-        print(response.status_code)
-        print(response.status_code, response.json())
+        self.data: list[dict] = [{"cui": cui, "data": self.__class__.today}]
+        print(self.data)
+
+    async def syncpost(self) -> httpx.Response | dict:
+        try:
+            async with httpx.AsyncClient() as asynclient:
+                asyncresponse: httpx.Response = await asynclient.post(
+                    "https://webservicesp.anaf.ro/PlatitorTvaRest/api/v8/ws/tva",
+                    data=json.dumps(self.data),
+                    headers=self.__class__.headers,
+                    timeout=5,
+                )
+                print(asyncresponse.status_code, asyncresponse.json())
+                return asyncresponse
+        except Exception as connerror:
+            print("Eroare de conexiune la serverele ANAF!", connerror)
+            return {
+                "message": "Eroare de conexiune la serverele ANAF!",
+                "error": connerror,
+            }
+        
+    async def asyncpostid(self) -> httpx.Response | dict:
+        try:
+            async with httpx.AsyncClient() as asynclient:
+                asyncresponse: httpx.Response = await asynclient.post(
+                    "https://webservicesp.anaf.ro/AsynchWebService/api/v8/ws/tva",
+                    data=json.dumps(self.data),
+                    headers=self.__class__.headers,
+                    timeout=10)
+            print(self.data, asyncresponse.status_code, asyncresponse.json())
+            return asyncresponse
+        except Exception as connerror:
+            print("Eroare de conexiune asincronă la serverele ANAF!", connerror)
+            return {
+                "message": "Eroare de conexiune la serverele ANAF!",
+                "error": connerror,
+            }
+
+    async def parseresponse(self):
+        try:
+            data = await self.syncpost()
+            if type(data) == dict and data.status_code == 200:
+                categories: dict = data.json()["found"]
+                date_generale: dict = categories["date_generale"]
+                inregistrare_scop_Tva: dict = categories["inregistrare_scop_Tva"]
+                perioade_TVA: list = inregistrare_scop_Tva["perioade_TVA"]
+        except Exception as parsingerror:
+            print("Eroare parsare json!", parsingerror)
+
+    async def parsecorrelationId(self, idresponse):
+        idresponse = await self.asyncpostid()
+        if type(idresponse) == dict:
+            return idresponse # error
+        else:
+            correlationId = idresponse.json().get('correlationId')
+            print(correlationId)
+            return correlationId
+
+    async def asyncgetid(self, correlationId) -> httpx.Response | dict:
+        try:
+            async with httpx.AsyncClient() as asynclient:
+                asyncresponse: httpx.Response = await asynclient.post(
+                    f'https://webservicesp.anaf.ro/AsynchWebService/api/v8/ws/tva?id={correlationId}',
+                    headers=self.__class__.headers,
+                    timeout=10)
+            print(self.data, asyncresponse.status_code, asyncresponse.json())
+            return asyncresponse
+        except Exception as connerror:
+            print("Eroare de conexiune asincronă la serverele ANAF!", connerror)
+            return {
+                "message": "Eroare de conexiune la serverele ANAF!",
+                "error": connerror,
+            }
+
+    async def main(self):
+        try:
+            response = await self.syncpost()
+            if type(response) != dict:
+                return self.parseresponse()
+            else:
+                print("Eroare serviciu sincron, încerc serviciul asincron!")
+                asyncidresponse = await self.asyncpostid()
+                correlationId = await self.parsecorrelationId(asyncidresponse)
+                await asyncio.sleep(2)
+                asyncresponse = await self.asyncgetid(correlationId)
+                if type(asyncresponse) != dict:
+                    return self.parseresponse()
+                else:
+                    return asyncresponse
+        except Exception as mainerror:
+            print("Eroare funcție principală, încerc serviciul asincron!", mainerror)
 
 
-'''
+if __name__ == "__main__":
+    anafapi_instance = Anafapi(19467555)
+    asyncio.run(anafapi_instance.main())
+
+"""
 headers = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/119.0',
     'Accept': 'application/json, text/plain, */*',
@@ -79,12 +171,7 @@ headers = {
 
 data = [{'cui': '19467555', 'data': today}]
 
-postresponse = requests.post('https://webservicesp.anaf.ro/AsynchWebService/api/v8/ws/tva', data=json.dumps(data), headers=headers, timeout=6)
-print(data, postresponse.status_code, postresponse.json())
-correlationId = postresponse.json().get('correlationId')
-sleep(2)
-getresponse = requests.get(f'https://webservicesp.anaf.ro/AsynchWebService/api/v8/ws/tva?id={correlationId}', timeout=6)
-print(getresponse.status_code, getresponse.json())
+
 
 In caz de inregistrare cu success a cererii:
             {"cod": 200,
@@ -97,9 +184,9 @@ b) Clientul trebuie sa astepte minim 2 secunde inainte sa inceapa descarcarea ra
 La fiecare GET efectuat pe serviciul de descarcare raspuns exista posibilitatea ca raspunsul sa nu fie inca disponibil. 
 In acest scenariu, clientul trebuie sa reincerce descarcarea prin efectuarea unui nou request GET. 
 Se recomanda configurarea clientului astfel incat sa suporte un timeout de minim 10 secunde pentru un request.
-'''
+"""
 
-
+"""
 def get_Anaf(cod, data=False):
     if not data:
         # data = datetime.now()
@@ -166,15 +253,13 @@ data = {
 response = requests.post('https://mfinante.gov.ro/apps/infocodfiscal.html', headers=headers, data=data)
 print(response.text)
 
-'''
-
-'''
 Function to retrieve data from ANAF for one vat number
 at certain date
 
 :param str cod:  vat number without country code or a list of codes
 :param date data: date of the interogation
 :return dict result: cost of the body's operation
+
 {
 "cui": "-- codul fiscal --",
 "data": "-- data pentru care se efectueaza cautarea --",
@@ -233,4 +318,4 @@ at certain date
 "dcod_Postal": "-- Cod postal domiciliu fiscal --",
 "data_inregistrare": "-- Data inregistrare -- ",
 "cod_CAEN": "-- Cod CAEN --",             }
-'''
+"""
