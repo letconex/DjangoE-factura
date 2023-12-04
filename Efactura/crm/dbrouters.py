@@ -1,15 +1,17 @@
-from crm.models import vendorschema
+"""DB routers for Vendor"""
+from crm.models import Vendor
 
+class DBRouter(object):
+    """Define db routes for reading/writing the model."""
 
-class MyDBRouter(object):
     def db_for_read(self, model, **hints):
-        """reading SomeModel from otherdb"""
-        if model == vendorschema:
+        """reading vendor model from vendors db"""
+        if model == Vendor:
             return "vendors"
         return None
 
     def db_for_write(self, model, **hints):
-        """writing SomeModel to otherdb"""
-        if model == vendorschema:
+        """writing vendor model from vendors db"""
+        if model == Vendor:
             return "vendors"
         return None

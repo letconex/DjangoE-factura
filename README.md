@@ -21,10 +21,12 @@ Tiberiu Cristian Leon\
 
 ## Istoricul versiunilor 
 
+* 0.0.3
+    * ToDo: creare model ORM vendors pe modelul API
 * 0.0.2
-    * ToDo: preluare date API Anaf
-    * See [commit change]() or [release history]()
+    * ToDo: preluare date API Anaf (sincron/asincron)
 * 0.0.1
     * Crearea structurii de bază a proiectului
+    * See [commit change]() or [release history]()
 
 #### Licență GPL.

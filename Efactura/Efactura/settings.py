@@ -78,7 +78,8 @@ DATABASES = {
         'NAME': BASE_DIR / 'vendors.sqlite3',
     }
 }
-DATABASE_ROUTERS = ('crm.dbrouters.MyDBRouter',)
+# Use vendor model with vendors DB
+DATABASE_ROUTERS = ('crm.dbrouters.DBRouter',)
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
 

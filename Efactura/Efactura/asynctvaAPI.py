@@ -19,15 +19,15 @@ class Anafapi:
 
     def __init__(self, cui) -> None:
         self.classname: str = self.__class__.__name__
-        self.data: list[dict] = [{"cui": cui, "data": self.__class__.today}]
-        print(self.data)
+        self.payload: list[dict] = [{"cui": cui, "data": self.__class__.today}]
+        print(self.payload)
 
     async def syncpost(self) -> httpx.Response | dict:
         try:
             async with httpx.AsyncClient() as asynclient:
                 asyncresponse: httpx.Response = await asynclient.post(
                     "https://webservicesp.anaf.ro/PlatitorTvaRest/api/v8/ws/tva",
-                    data=json.dumps(self.data),
+                    data=json.dumps(self.payload),
                     headers=self.__class__.headers,
                     timeout=5,
                 )
@@ -45,10 +45,10 @@ class Anafapi:
             async with httpx.AsyncClient() as asynclient:
                 asyncresponse: httpx.Response = await asynclient.post(
                     "https://webservicesp.anaf.ro/AsynchWebService/api/v8/ws/tva",
-                    data=json.dumps(self.data),
+                    data=json.dumps(self.payload),
                     headers=self.__class__.headers,
                     timeout=10)
-            print(self.data, asyncresponse.status_code, asyncresponse.json())
+            print(self.payload, asyncresponse.status_code, asyncresponse.json())
             return asyncresponse
         except Exception as connerror:
             print("Eroare de conexiune asincronă la serverele ANAF!", connerror)
@@ -97,7 +97,7 @@ class Anafapi:
         try:
             response = await self.syncpost()
             if type(response) != dict:
-                return self.parseresponse()
+                return await self.parseresponse()
             else:
                 print("Eroare serviciu sincron, încerc serviciul asincron!")
                 asyncidresponse = await self.asyncpostid()
@@ -105,15 +105,14 @@ class Anafapi:
                 await asyncio.sleep(2)
                 asyncresponse = await self.asyncgetid(correlationId)
                 if type(asyncresponse) != dict:
-                    return self.parseresponse()
-                else:
-                    return asyncresponse
+                    return await self.parseresponse()
+                return asyncresponse
         except Exception as mainerror:
             print("Eroare funcție principală, încerc serviciul asincron!", mainerror)
 
 
 if __name__ == "__main__":
-    anafapi_instance = Anafapi(19467555)
+    anafapi_instance = Anafapi(19479100)
     asyncio.run(anafapi_instance.main())
 
 """

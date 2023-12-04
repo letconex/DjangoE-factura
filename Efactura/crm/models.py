@@ -2,7 +2,7 @@
 from django.db import models
 
 class date_generale(models.Model):
-    cui = models.IntegerField(max_length=100, blank=False, unique=True)
+    cui = models.IntegerField(blank=False, unique=True)
     denumire = models.CharField(max_length=100, blank=False, unique=True)
     adresa = models.CharField(max_length=100, blank=False)
     nrRegCom = models.CharField(max_length=100, blank=False, unique=True)
@@ -20,20 +20,20 @@ class date_generale(models.Model):
     forma_organizare = models.CharField(max_length=100)
     forma_juridica = models.CharField(max_length=100)
 
+    class Meta:
+        constraints = [models.UniqueConstraint(
+                fields=["cui", "denumire", "adresa", "nrRegCom"],
+                name="dg_unique_constraint")]
 
 class inregistrare_scop_Tva(models.Model):
-    scpTVA = models.BooleanField()
-
-
-class perioade_TVA(models.Model):
-    inregistrare_scop_tva = models.ForeignKey(
-        inregistrare_scop_Tva, on_delete=models.CASCADE
-    )
-    data_inceput_ScpTVA = models.DateField()
-    data_sfarsit_ScpTVA = models.DateField()
-    data_anul_imp_ScpTVA = models.DateField()
-    mesaj_ScpTVA = models.CharField(max_length=100)
-
+    scpTVA = models.BooleanField(blank=True, null=True)
+    # perioade_TVA = models.ManyToManyField(PerioadeTVA)
+    
+class PerioadeTVA(inregistrare_scop_Tva):
+    data_inceput_ScpTVA = models.DateField(blank=True, null=True)
+    data_sfarsit_ScpTVA = models.DateField(blank=True, null=True)
+    data_anul_imp_ScpTVA = models.DateField(blank=True, null=True)
+    mesaj_ScpTVA = models.CharField(max_length=255, blank=True, null=True)
 
 class inregistrare_RTVAI(models.Model):
     dataInceputTvaInc = models.DateField(max_length=100)
@@ -43,7 +43,6 @@ class inregistrare_RTVAI(models.Model):
     tipActTvaInc = models.CharField(max_length=100)
     statusTvaIncasare = models.BooleanField()
 
-
 class stare_inactiv(models.Model):
     dataInactivare = models.CharField(max_length=100)
     dataReactivare = models.CharField(max_length=100)
@@ -51,12 +50,10 @@ class stare_inactiv(models.Model):
     dataRadiere = models.CharField(max_length=100)
     statusInactivi = models.BooleanField()
 
-
 class inregistrare_SplitTVA(models.Model):
     dataInceputSplitTVA = models.CharField(max_length=100)
     dataAnulareSplitTVA = models.CharField(max_length=100)
     statusSplitTVA = models.BooleanField()
-
 
 class adresa_sediu_social(models.Model):
     sdenumire_Strada = models.CharField(max_length=100)
@@ -70,7 +67,6 @@ class adresa_sediu_social(models.Model):
     sdetalii_Adresa = models.CharField(max_length=100)
     scod_Postal = models.IntegerField()
 
-
 class adresa_domiciliu_fiscal(models.Model):
     ddenumire_Strada = models.CharField(max_length=100)
     dnumar_Strada = models.IntegerField()
@@ -83,46 +79,51 @@ class adresa_domiciliu_fiscal(models.Model):
     ddetalii_Adresa = models.CharField(max_length=100)
     dcod_Postal = models.IntegerField()
 
-
 class extras(models.Model):
     contactperson = models.CharField(max_length=100)
     email = models.CharField(max_length=100)
     web = models.CharField(max_length=100)
     comments = models.CharField(max_length=100)
 
-
-class vendorschema(models.Model):
+class Vendor(models.Model):
     """General class with all intermediate fields"""
-
-    date_generale = models.ForeignKey(date_generale, on_delete=models.CASCADE)
-    inregistrare_scop_Tva = models.ForeignKey(
-        inregistrare_scop_Tva, on_delete=models.CASCADE
-    )
-    inregistrare_RTVAI = models.ForeignKey(inregistrare_RTVAI, on_delete=models.CASCADE)
-    stare_inactiv = models.ForeignKey(stare_inactiv, on_delete=models.CASCADE)
-    inregistrare_SplitTVA = models.ForeignKey(
-        inregistrare_SplitTVA, on_delete=models.CASCADE
-    )
-    adresa_sediu_social = models.ForeignKey(
-        adresa_sediu_social, on_delete=models.CASCADE
-    )
-    adresa_domiciliu_fiscal = models.ForeignKey(
-        adresa_domiciliu_fiscal, on_delete=models.CASCADE
-    )
-    extras = models.ForeignKey(extras, on_delete=models.CASCADE)
+    date_generale = models.ManyToManyField(date_generale)
+    inregistrare_scop_Tva = models.ManyToManyField(inregistrare_scop_Tva)
+    inregistrare_RTVAI = models.ManyToManyField(inregistrare_RTVAI)
+    stare_inactiv = models.ManyToManyField(stare_inactiv)
+    inregistrare_SplitTVA = models.ManyToManyField(inregistrare_SplitTVA)
+    adresasediu_social = models.ManyToManyField(adresa_sediu_social)
+    adresadomiciliu_fiscal = models.ManyToManyField(adresa_domiciliu_fiscal)
+    extras = models.ManyToManyField(extras)
     created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self) -> str:
         return f"{self.date_generale}"
 
     class Meta:
         """Use vendors db for this model"""
-
-        db_table: str = "vendors"
+        db_table: str = "vendor"
         app_label: str = "crm"
         managed = False
-        get_latest_by = "created_at"
-        verbose_name = "Vendors model"
+        get_latest_by: str = "created_at"
+        verbose_name: str = "Vendors DB model"
+
+# class CascadeVendor(models.Model):
+#     """General class with all intermediate fields"""
+#     date_generale = models.ForeignKey(date_generale, on_delete=models.CASCADE)
+#     inregistrare_scop_Tva = models.ForeignKey(
+#         inregistrare_scop_Tva, on_delete=models.CASCADE)
+#     inregistrare_RTVAI = models.ForeignKey(inregistrare_RTVAI, on_delete=models.CASCADE)
+#     stare_inactiv = models.ForeignKey(stare_inactiv, on_delete=models.CASCADE)
+#     inregistrare_SplitTVA = models.ForeignKey(
+#         inregistrare_SplitTVA, on_delete=models.CASCADE)
+#     adresa_sediu_social = models.ForeignKey(
+#         adresa_sediu_social, on_delete=models.CASCADE)
+#     adresa_domiciliu_fiscal = models.ForeignKey(
+#         adresa_domiciliu_fiscal, on_delete=models.CASCADE)
+#     extras = models.ForeignKey(extras, on_delete=models.CASCADE)
+#     created_at = models.DateTimeField(auto_now_add=True)
 
 class Record(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
