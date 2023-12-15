@@ -27,7 +27,6 @@ class date_generale(models.Model):
 
 class inregistrare_scop_Tva(models.Model):
     scpTVA = models.BooleanField(blank=True, null=True)
-    # perioade_TVA = models.ManyToManyField(PerioadeTVA)
     
 class PerioadeTVA(inregistrare_scop_Tva):
     data_inceput_ScpTVA = models.DateField(blank=True, null=True)

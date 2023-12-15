@@ -24,22 +24,22 @@ def crmlogin(request):
             login(request, user)
             messages.success(request, f"User {username} has been logged in!")
             context = {'user': user}
-            return redirect('crmindex')
+            return redirect('crmhome')
         else:
             messages.error(request, "Error logging in!")
-            return redirect('crmindex')
+            return redirect('crmhome')
     else:
         return render(request, "crmlogin.html", {})
 
 def logout_user(request):
     logout(request)
     messages.success(request, "User has been logged out...")
-    return redirect('crmindex')
-    # return render(request, "crmindex.html", {})
+    return redirect('crmhome')
+    # return render(request, "crmhome.html", {})
 
 def login_user(request):
     return redirect('crmlogin')
-    # return render(request, "crmindex.html", {})
+    # return render(request, "crmhome.html", {})
 
 def register_user(request):
     if request.method == 'POST':
@@ -52,7 +52,7 @@ def register_user(request):
             user = authenticate(username=username, password=password)
             login(request, user)
             messages.success(request, "You Have Successfully Registered! Welcome!")
-            return redirect('crmindex')
+            return redirect('crmhome')
     else:
         form = SignUpForm()
         return render(request, 'register.html', {'form':form})

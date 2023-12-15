@@ -7,14 +7,13 @@ Este o aplicație web ce permite administrarea unei baze de date a clienților �
 * Nu se asigură nicio garanție de funcționare.
 
 ### Rulare
-
+Versiune Python >= 3.10 (pentru type hinting cu „pipe character” | )
+Versiunea Django 4.2 necesită minim Python 3.8
 ```
 python admin.py runserver
 ```
 
 ## Autor
-Numele colaboratorilor și informații de contact
-
 Tiberiu Cristian Leon\
 [www.traduceri.pluto.ro](www.traduceri.pluto.ro)\
 [https://letconex.blogspot.com/](https://letconex.blogspot.com/)
@@ -24,7 +23,7 @@ Tiberiu Cristian Leon\
 * 0.0.3
     * ToDo: creare model ORM vendors pe modelul API
 * 0.0.2
-    * ToDo: preluare date API Anaf (sincron/asincron)
+    * Clasă pentru preluare date API Anaf (serviciu sincron/asincron) - parțial
 * 0.0.1
     * Crearea structurii de bază a proiectului
     * See [commit change]() or [release history]()
